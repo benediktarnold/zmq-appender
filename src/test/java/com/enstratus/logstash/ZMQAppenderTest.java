@@ -54,6 +54,7 @@ public class ZMQAppenderTest {
         appender = new ZMQAppender();
         appender.setEndpoint(zmqUrl);
         appender.setTags("test, case, tagz");
+        appender.setMDC("want,id");
         appender.setIdentity("unit-tests");
         appender.setBlocking(true);
         appender.setThreads(1);
@@ -81,7 +82,7 @@ public class ZMQAppenderTest {
     @After
     public void clear(){
         NDC.clear();
-        MDC.clear();
+        //MDC.clear();
     }
 
 	@Test

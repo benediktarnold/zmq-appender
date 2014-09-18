@@ -24,10 +24,11 @@ public class LoggingEventData {
 		super();
 	}
 
-	public LoggingEventData(final LoggingEvent event) {
+	@SuppressWarnings("rawtypes")
+	public LoggingEventData(final LoggingEvent event,String[] mdcKeys) {
         this();
 		this.log = event.getLoggerName();
-		this.time = event.getTimeStamp();
+		this.time = event.timeStamp;
 		this.level = event.getLevel().toString();
 		this.msg = event.getMessage().toString();
 		this.thread = event.getThreadName();
@@ -48,6 +49,9 @@ public class LoggingEventData {
         this.exceptionInformation = ex;
 		this.ndc = event.getNDC();
 		this.info = new LocationInfoData(event.getLocationInformation());
-		this.mdc = event.getProperties();
+		this.mdc = new HashMap();
+		for (String key : mdcKeys) {
+			this.mdc.put(key, event.getMDC(key));
+		}
 	}
 }

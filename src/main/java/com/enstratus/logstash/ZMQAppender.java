@@ -16,6 +16,7 @@ public class ZMQAppender extends AppenderSkeleton {
 
 	// ZMQ specific "stuff"
 	private int threads;
+	//TODO make hwm configurable
 	private int hwm;
 	private String endpoint;
 	private String mode;
@@ -27,6 +28,12 @@ public class ZMQAppender extends AppenderSkeleton {
 	// Ancillary settings
 	private String tags;
 	private String eventFormat = "json_event";
+
+	private Context context;
+
+	private String mdc;
+
+	private String[] mdcKeys;
 	
 	private static final String PUBSUB = "pub";
 	private static final String PUSHPULL = "push";
@@ -45,7 +52,9 @@ public class ZMQAppender extends AppenderSkeleton {
 	}
 
 	public void close() {
-
+		socket.close();
+		context.term();
+		LogLog.debug("Closing appender");
 	}
 
 	public boolean requiresLayout() {
@@ -55,7 +64,7 @@ public class ZMQAppender extends AppenderSkeleton {
 	@Override
 	protected void append(LoggingEvent event) {
         LogLog.debug("Got append event");
-		final LoggingEventData data = new LoggingEventData(event);
+		final LoggingEventData data = new LoggingEventData(event,mdcKeys);
         String messageFormat = getEventFormat();
         LogLog.debug("Message format: "+ messageFormat);
         String logLine = "";
@@ -109,11 +118,16 @@ public class ZMQAppender extends AppenderSkeleton {
 			LogLog.debug("Setting socket type to default PUB");
 			sender = context.socket(ZMQ.PUB);
 		}
-		sender.setLinger(1);
+		//TODO make linger configurable
+		sender.setLinger(-1);
+		//TODO make hwm configurable
+		sender.setHWM(2000);
 		
 		final Socket socket = sender;
 		
 		final String[] endpoints = endpoint.split(",");
+		
+		mdcKeys = mdc.split(",");
 		
 		for(String ep : endpoints) {
 			
@@ -139,6 +153,7 @@ public class ZMQAppender extends AppenderSkeleton {
 		}
 		
 		this.socket = socket;
+		this.context = context;
         LogLog.debug("Finished configuring appender");
 	}
 
@@ -212,5 +227,9 @@ public class ZMQAppender extends AppenderSkeleton {
 
 	public void setEventFormat(final String eventFormat) {
 		this.eventFormat = eventFormat;
+	}
+
+	public void setMDC(String mdcKeys) {
+		this.mdc = mdcKeys;
 	}
 }

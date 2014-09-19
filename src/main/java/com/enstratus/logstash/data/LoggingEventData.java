@@ -3,9 +3,10 @@ package com.enstratus.logstash.data;
 import java.util.Map;
 import java.util.HashMap;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
+
+import com.enstratus.logstash.utils.StringUtils;
 
 public class LoggingEventData {
 	public String fqn;

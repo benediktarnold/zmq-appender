@@ -5,7 +5,9 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.jeromq.ZMQ;
 import org.jeromq.ZMQ.Context;
 import org.jeromq.ZMQ.Socket;
-import org.apache.commons.lang.StringUtils;
+
+import com.enstratus.logstash.utils.StringUtils;
+
 import java.util.*;
 
 public class ZMQConsoleAppender extends AppenderSkeleton {

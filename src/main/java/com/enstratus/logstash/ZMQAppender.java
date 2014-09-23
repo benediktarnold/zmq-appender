@@ -16,8 +16,7 @@ public class ZMQAppender extends AppenderSkeleton {
 
 	// ZMQ specific "stuff"
 	private int threads;
-	//TODO make hwm configurable
-	private int hwm;
+	private long hwm;
 	private String endpoint;
 	private String mode;
 	private String socketType;
@@ -34,6 +33,8 @@ public class ZMQAppender extends AppenderSkeleton {
 	private String mdc;
 
 	private String[] mdcKeys;
+
+	private long linger;
 	
 	private static final String PUBSUB = "pub";
 	private static final String PUSHPULL = "push";
@@ -100,7 +101,10 @@ public class ZMQAppender extends AppenderSkeleton {
 	public void activateOptions() {
         LogLog.debug("Configuring appender...");
 		super.activateOptions();
-
+		if(threads <=0){
+			LogLog.debug("Using default threads 1");
+			threads = 1;
+		}
 		final Context context = ZMQ.context(threads);
 		Socket sender;
 
@@ -118,16 +122,20 @@ public class ZMQAppender extends AppenderSkeleton {
 			LogLog.debug("Setting socket type to default PUB");
 			sender = context.socket(ZMQ.PUB);
 		}
-		//TODO make linger configurable
-		sender.setLinger(-1);
-		//TODO make hwm configurable
-		sender.setHWM(2000);
+		if(this.linger == 0){
+			this.linger = -1;
+			LogLog.debug("Using default linger of -1");
+		}
+		sender.setLinger(this.linger);
+		if(this.hwm == 0){
+			this.hwm = 2000;
+			LogLog.debug("Using default HWM 2000");
+		}
+		sender.setHWM(this.hwm);
 		
 		final Socket socket = sender;
 		
 		final String[] endpoints = endpoint.split(",");
-		
-		mdcKeys = mdc.split(",");
 		
 		for(String ep : endpoints) {
 			
@@ -154,6 +162,10 @@ public class ZMQAppender extends AppenderSkeleton {
 		
 		this.socket = socket;
 		this.context = context;
+		
+		if(mdc != null){
+			mdcKeys = mdc.split(",");
+		}
         LogLog.debug("Finished configuring appender");
 	}
 
@@ -231,5 +243,19 @@ public class ZMQAppender extends AppenderSkeleton {
 
 	public void setMDC(String mdcKeys) {
 		this.mdc = mdcKeys;
+	}
+	
+	Socket getSenderSocket(){
+		return this.socket;
+	}
+
+	public void setLinger(long linger) {
+		this.linger = linger;
+		
+	}
+
+	public void setHWM(long hwn) {
+		this.hwm = hwn;
+		
 	}
 }
